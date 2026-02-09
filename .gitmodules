@@ -1,6 +1,0 @@
-[submodule "Priori"]
-	path = Priori
-	url = https://github.com/DigitalInBlue/Priori
-[submodule "kcl"]
-	path = kcl
-	url = https://github.com/Kahncode/kcl.git

@@ -28,7 +28,6 @@
 */
 
 #include "vrc/rtti_base.h"
-#include "priori/priori.h"
 #include "KCL/KCL_RTTI.h"
 
 #include <iostream>
@@ -45,29 +44,23 @@
 enum class Hierarchy { deep, shallow, balanced, cross };
 enum class SortOrder { aligned, shuffled };
 
-auto max_num_ops = 0;
+double max_num_ops = 0;
 
-const uint64_t n = 2'000'000; // number of iterations
-const auto num_usecs_per_sec = 1'000'000;
+constexpr uint64_t N = 2'000'000; // number of iterations
+const int USECS_PER_SEC = 1'000'000;
 
-struct _A: priori::Base {
-    uint64_t x { 1 };
-};
-KCL_RTTI_REGISTER(_A);
-
-struct A : KCL::RTTI::Base, vrc::RttiBase, virtual _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); A() { priori(this); } };
-KCL_RTTI_REGISTER(A, _A);
-
+struct A : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t a{1}; uint64_t z{0}; };
+KCL_RTTI_REGISTER(A);
 VRC_DECLARE_CLASS_NAME(A);
 
 namespace deep {
-    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); B() { priori(this); } };
-    struct C : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); C() { priori(this); } };
-    struct D : C { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(C); D() { priori(this); } };
-    struct E : D { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(D); E() { priori(this); } };
-    struct F : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); F() { priori(this); } };
-    struct G : F { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(F); G() { priori(this); } };
-    struct H : G { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(G); H() { priori(this); } };
+    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t b{1}; };
+    struct C : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); uint64_t c{1}; };
+    struct D : C { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(C); uint64_t d{1}; };
+    struct E : D { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(D); uint64_t e{1}; };
+    struct F : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); uint64_t f{1}; };
+    struct G : F { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(F); uint64_t g{1}; };
+    struct H : G { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(G); uint64_t h{1}; };
 }
 KCL_RTTI_REGISTER(deep::B, A);
 KCL_RTTI_REGISTER(deep::C, deep::B);
@@ -86,13 +79,13 @@ VRC_DECLARE_CLASS_NAME(deep::G);
 VRC_DECLARE_CLASS_NAME(deep::H);
 
 namespace shallow {
-    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); B() { priori(this); } };
-    struct C : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); C() { priori(this); } };
-    struct D : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); D() { priori(this); } };
-    struct E : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); E() { priori(this); } };
-    struct F : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); F() { priori(this); } };
-    struct G : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); G() { priori(this); } };
-    struct H : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); H() { priori(this); } };
+    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t b{1}; };
+    struct C : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t c{1}; };
+    struct D : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t d{1}; };
+    struct E : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t e{1}; };
+    struct F : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t f{1}; };
+    struct G : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t g{1}; };
+    struct H : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t h{1}; };
 }
 KCL_RTTI_REGISTER(shallow::B, A);
 KCL_RTTI_REGISTER(shallow::C, shallow::B);
@@ -111,14 +104,14 @@ VRC_DECLARE_CLASS_NAME(shallow::G);
 VRC_DECLARE_CLASS_NAME(shallow::H);
 
 namespace balanced {
-    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); B() { priori(this); } };
-    struct C : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); C() { priori(this); } };
-    struct D : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); D() { priori(this); } };
+    struct B : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t b{1}; };
+    struct C : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); uint64_t c{1}; };
+    struct D : B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(B); uint64_t d{1}; };
 
-    struct E : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); E() { priori(this); } };
-    struct F : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); F() { priori(this); } };
-    struct G : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); G() { priori(this); } };
-    struct H : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); H() { priori(this); } };
+    struct E : A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(A); uint64_t e{1}; };
+    struct F : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); uint64_t f{1}; };
+    struct G : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); uint64_t g{1}; };
+    struct H : E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(E); uint64_t h{1}; };
 }
 KCL_RTTI_REGISTER(balanced::B, A);
 KCL_RTTI_REGISTER(balanced::C, balanced::B);
@@ -137,23 +130,21 @@ VRC_DECLARE_CLASS_NAME(balanced::G);
 VRC_DECLARE_CLASS_NAME(balanced::H);
 
 namespace cross {
-    struct B : KCL::RTTI::Base, vrc::RttiBase, virtual _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); B() { priori(this); } };
-    struct C : KCL::RTTI::Base, vrc::RttiBase, virtual _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); C() { priori(this); } };
-    struct D : B, C { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(vrc::AsIface<B>, vrc::AsIface<C>); D() { priori(this); } };
-
-    struct E : KCL::RTTI::Base, vrc::RttiBase, virtual _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); E() { priori(this); } };
-    struct G : A, D, E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(D, vrc::AsIface<A>, vrc::AsIface<E>); G() { priori(this); } };
-
-    struct F : KCL::RTTI::Base, vrc::RttiBase, virtual _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); F() { priori(this); } };
-    struct H : G, F { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(G, vrc::AsIface<F>); H() { priori(this); } };
+    struct B : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t b{1}; };
+    struct C : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t c{1}; };
+    struct D : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t d{1}; };
+    struct E : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t e{1}; };
+    struct F : A, B { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(vrc::AsIface<A>, vrc::AsIface<B>); uint64_t f{1}; };
+    struct G : F, C, D { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(F, vrc::AsIface<C>, vrc::AsIface<D>); uint64_t g{1}; };
+    struct H : G, E { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(G, vrc::AsIface<E>); uint64_t h{1}; };
 }
-KCL_RTTI_REGISTER(cross::B, _A);
-KCL_RTTI_REGISTER(cross::C, _A);
-KCL_RTTI_REGISTER(cross::D, cross::B, cross::C);
-KCL_RTTI_REGISTER(cross::E, _A);
-KCL_RTTI_REGISTER(cross::G, A, cross::D, cross::E);
-KCL_RTTI_REGISTER(cross::F, _A);
-KCL_RTTI_REGISTER(cross::H, cross::G, cross::F);
+KCL_RTTI_REGISTER(cross::B);
+KCL_RTTI_REGISTER(cross::C);
+KCL_RTTI_REGISTER(cross::D);
+KCL_RTTI_REGISTER(cross::E);
+KCL_RTTI_REGISTER(cross::F, A, cross::B);
+KCL_RTTI_REGISTER(cross::G, cross::F, cross::C, cross::D);
+KCL_RTTI_REGISTER(cross::H, cross::G, cross::E);
 
 VRC_DECLARE_CLASS_NAME(cross::B);
 VRC_DECLARE_CLASS_NAME(cross::C);
@@ -164,15 +155,27 @@ VRC_DECLARE_CLASS_NAME(cross::G);
 VRC_DECLARE_CLASS_NAME(cross::H);
 
 // Same interface as A, but not related.
-struct Z : KCL::RTTI::Base, vrc::RttiBase, _A { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); Z() { priori(this); } };
+struct Z : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); uint64_t z{1}; };
 KCL_RTTI_REGISTER(Z);
-
 VRC_DECLARE_CLASS_NAME(Z);
 
 
-void draw_bar(float percent, std::string s = "-") {
-    const auto cols = 80;
-    uint64_t width = cols * percent;
+struct JustKclRtti : KCL::RTTI::Base { KCL_RTTI_IMPL(); };
+KCL_RTTI_REGISTER(JustKclRtti);
+
+struct JustVrcRtti : vrc::RttiBase { VRC_IMPLEMENT_DYNAMIC_CAST(); };
+VRC_DECLARE_CLASS_NAME(JustVrcRtti);
+
+struct JustRtti : KCL::RTTI::Base, vrc::RttiBase { KCL_RTTI_IMPL(); VRC_IMPLEMENT_DYNAMIC_CAST(); };
+KCL_RTTI_REGISTER(JustRtti);
+VRC_DECLARE_CLASS_NAME(JustRtti);
+
+double dummy = 0;
+std::default_random_engine rng{};
+
+void draw_bar(double percent, std::string s = "-") {
+    const int cols = 80;
+    uint64_t width = uint64_t(cols * percent);
     if (width > cols) {
         width = cols;
         printf("|");
@@ -185,160 +188,148 @@ void draw_bar(float percent, std::string s = "-") {
     }
 }
 
-uint64_t run(std::string label, std::function<uint64_t()> benchmark)
+double run(std::string label, std::function<uint64_t()> benchmark)
 {
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto successes = benchmark();
+    uint64_t successes = benchmark();
     auto t2 = std::chrono::high_resolution_clock::now();
 
-    auto usecs_per_iterations =
+    auto usecs_total =
         std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
-    auto num_ops = num_usecs_per_sec / (float(usecs_per_iterations) / n);
-    if (max_num_ops == 0) max_num_ops = num_ops; // the first run will be 100%
-    auto percent = float(num_ops) / float(max_num_ops);
+    double num_ops = USECS_PER_SEC / (double(usecs_total) / N);
+    if (max_num_ops == 0) { max_num_ops = num_ops; } // the first run will be 100%
+    double percent = num_ops / max_num_ops;
     printf(
-            "%3s: %5.1f MHz (%3.0f%%) [%7lu] ",
+            "%3s: %6.1f MHz (%3.0f%%) [%7llu] ",
             label.c_str(),
-            num_ops / num_usecs_per_sec,
-            percent * 100, successes
+            num_ops / USECS_PER_SEC,
+            percent * 100, static_cast<unsigned long long>(successes)
           );
     draw_bar(percent);
     return num_ops;
 }
 
-void generate_data(std::vector<std::shared_ptr<A>>& v, Hierarchy h, unsigned int from = 7, unsigned int width = 0)
+std::vector<std::unique_ptr<A>> generate_data(Hierarchy h, unsigned from, unsigned width)
 {
-    v.reserve(n); // ensure contiguous memory
-    for(uint64_t i = 0; i < n; i++) {
-        uint64_t val = from + rand() % (width + 1);
+    std::vector<std::unique_ptr<A>> v;
+    v.reserve(N);
+
+    std::uniform_int_distribution<unsigned> distrib(from, from + width);
+
+    for(uint64_t i = 0; i < N; ++i) {
+        unsigned val = distrib(rng);
         if (h == Hierarchy::deep) {
             switch(val) {
-                case  0: v.emplace_back(std::make_shared<A>()); break;
-                case  1: v.emplace_back(std::make_shared<deep::B>()); break;
-                case  2: v.emplace_back(std::make_shared<deep::C>()); break;
-                case  3: v.emplace_back(std::make_shared<deep::D>()); break;
-                case  4: v.emplace_back(std::make_shared<deep::E>()); break;
-                case  5: v.emplace_back(std::make_shared<deep::F>()); break;
-                case  6: v.emplace_back(std::make_shared<deep::G>()); break;
-                case  7: v.emplace_back(std::make_shared<deep::H>()); break;
+                case  0: v.emplace_back(std::make_unique<A>()); break;
+                case  1: v.emplace_back(std::make_unique<deep::B>()); break;
+                case  2: v.emplace_back(std::make_unique<deep::C>()); break;
+                case  3: v.emplace_back(std::make_unique<deep::D>()); break;
+                case  4: v.emplace_back(std::make_unique<deep::E>()); break;
+                case  5: v.emplace_back(std::make_unique<deep::F>()); break;
+                case  6: v.emplace_back(std::make_unique<deep::G>()); break;
+                case  7: v.emplace_back(std::make_unique<deep::H>()); break;
             }
         } else if (h == Hierarchy::shallow) {
             switch(val) {
-                case  0: v.emplace_back(std::make_shared<A>()); break;
-                case  1: v.emplace_back(std::make_shared<shallow::B>()); break;
-                case  2: v.emplace_back(std::make_shared<shallow::C>()); break;
-                case  3: v.emplace_back(std::make_shared<shallow::D>()); break;
-                case  4: v.emplace_back(std::make_shared<shallow::E>()); break;
-                case  5: v.emplace_back(std::make_shared<shallow::F>()); break;
-                case  6: v.emplace_back(std::make_shared<shallow::G>()); break;
-                case  7: v.emplace_back(std::make_shared<shallow::H>()); break;
+                case  0: v.emplace_back(std::make_unique<A>()); break;
+                case  1: v.emplace_back(std::make_unique<shallow::B>()); break;
+                case  2: v.emplace_back(std::make_unique<shallow::C>()); break;
+                case  3: v.emplace_back(std::make_unique<shallow::D>()); break;
+                case  4: v.emplace_back(std::make_unique<shallow::E>()); break;
+                case  5: v.emplace_back(std::make_unique<shallow::F>()); break;
+                case  6: v.emplace_back(std::make_unique<shallow::G>()); break;
+                case  7: v.emplace_back(std::make_unique<shallow::H>()); break;
             }
         } else if (h == Hierarchy::balanced) {
             switch(val) {
-                case  0: v.emplace_back(std::make_shared<A>()); break;
-                case  1: v.emplace_back(std::make_shared<balanced::B>()); break;
-                case  2: v.emplace_back(std::make_shared<balanced::C>()); break;
-                case  3: v.emplace_back(std::make_shared<balanced::D>()); break;
-                case  4: v.emplace_back(std::make_shared<balanced::E>()); break;
-                case  5: v.emplace_back(std::make_shared<balanced::F>()); break;
-                case  6: v.emplace_back(std::make_shared<balanced::G>()); break;
-                case  7: v.emplace_back(std::make_shared<balanced::H>()); break;
+                case  0: v.emplace_back(std::make_unique<A>()); break;
+                case  1: v.emplace_back(std::make_unique<balanced::B>()); break;
+                case  2: v.emplace_back(std::make_unique<balanced::C>()); break;
+                case  3: v.emplace_back(std::make_unique<balanced::D>()); break;
+                case  4: v.emplace_back(std::make_unique<balanced::E>()); break;
+                case  5: v.emplace_back(std::make_unique<balanced::F>()); break;
+                case  6: v.emplace_back(std::make_unique<balanced::G>()); break;
+                case  7: v.emplace_back(std::make_unique<balanced::H>()); break;
             }
         } else if (h == Hierarchy::cross) {
             switch(val) {
-                case  0: v.emplace_back(std::make_shared<A>()); break;
-                case  6: v.emplace_back(std::make_shared<cross::G>()); break;
-                case  7: v.emplace_back(std::make_shared<cross::H>()); break;
+                case  5: v.emplace_back(std::make_unique<cross::F>()); break;
+                case  6: v.emplace_back(std::make_unique<cross::G>()); break;
+                case  7: v.emplace_back(std::make_unique<cross::H>()); break;
             }
         }
     }
+    return v;
 }
 
-void shuffle(std::vector<std::shared_ptr<A>>& v) {
-    auto rng = std::default_random_engine { };
+void shuffle(std::vector<std::unique_ptr<A>>& v) {
     std::shuffle(std::begin(v), std::end(v), rng);
 }
 
-void print_average(float num) {
-    auto avg = num / 9.0;
+void print_average(double num) {
+    double avg = num / 8.0;
     printf("------------\n");
-    printf("AVG: %6.1f MHz                  ", avg / num_usecs_per_sec);
+    printf("AVG: %6.1f MHz                  ", avg / USECS_PER_SEC);
     draw_bar(avg / max_num_ops, "=");
 }
 
-float dummy = 0;
-void run_benchmarks(std::vector<std::shared_ptr<A>>& v, Hierarchy h)
+void run_benchmarks(std::vector<std::unique_ptr<A>>& v, Hierarchy h)
 {
-    float sum = 0;
+    double sum = 0;
 
     max_num_ops = 0;
 
     // Cache warming
-    dummy += [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = static_cast <      A*>(e.get()); p ? s += p->x : dummy++; } return s; }();
+    dummy += [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = static_cast <      A*>(e.get()); s += p ? p->a : e->z; } return s; }();
 
     printf("Base-line: static_cast\n");
     printf("```\n");
-    dummy += run("-", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = static_cast <      A*>(e.get()); p ? s += p->x : dummy++; } return s; });
+             run("-", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = static_cast <      A*>(e.get()); s += p ? p->a : e->z; } return s; });
     printf("```\n\n");
 
     if (h == Hierarchy::deep) {
         printf("Implementation: `dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<      A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<deep::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<      Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<      A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<deep::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<      Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n");
 
         printf("Implementation: `vrc::dynamicCast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<      A>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::B>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::C>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::D>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::E>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::F>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::G>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<deep::H>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<      Z>(e.get()); p ? s += p->x : dummy++; } return s; });
-        print_average(sum);
-        printf("```\n\n");
-
-        printf("Implementation: `priori_cast`\n");
-        printf("```\n");
-        sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<      A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<deep::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<      Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<      A>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::B>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::C>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::D>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::E>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::F>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::G>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<deep::H>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<      Z>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `kcl_dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<      A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<deep::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<      Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<      A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<deep::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<      Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
@@ -346,60 +337,45 @@ void run_benchmarks(std::vector<std::shared_ptr<A>>& v, Hierarchy h)
         printf("Implementation: `dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<         A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<shallow::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<         Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<         A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<shallow::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<         Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `vrc::dynamicCast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<         A>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::B>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::C>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::D>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::E>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::F>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::G>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<shallow::H>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<         Z>(e.get()); p ? s += p->x : dummy++; } return s; });
-        print_average(sum);
-        printf("```\n\n");
-
-        printf("Implementation: `priori_cast`\n");
-        printf("```\n");
-        sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<         A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<shallow::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<         Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<         A>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::B>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::C>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::D>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::E>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::F>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::G>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<shallow::H>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<         Z>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `kcl_dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<         A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<shallow::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<         Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<         A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<shallow::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<         Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
@@ -407,60 +383,45 @@ void run_benchmarks(std::vector<std::shared_ptr<A>>& v, Hierarchy h)
         printf("Implementation: `dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<          A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<balanced::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<          Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<          A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<balanced::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<          Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `vrc::dynamicCast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<          A>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::B>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::C>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::D>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::E>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::F>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::G>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<balanced::H>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<          Z>(e.get()); p ? s += p->x : dummy++; } return s; });
-        print_average(sum);
-        printf("```\n\n");
-
-        printf("Implementation: `priori_cast`\n");
-        printf("```\n");
-        sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<          A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<balanced::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<          Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<          A>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::B>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::C>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::D>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::E>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::F>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::G>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<balanced::H>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<          Z>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `kcl_dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<          A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<balanced::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<          Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<          A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<balanced::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<          Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
@@ -468,106 +429,72 @@ void run_benchmarks(std::vector<std::shared_ptr<A>>& v, Hierarchy h)
         printf("Implementation: `dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<       A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<cross::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = dynamic_cast<       Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<       A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<cross::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = dynamic_cast<       Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `vrc::dynamicCast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<       A>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::B>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::C>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::D>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::E>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::F>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::G>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<cross::H>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = vrc::dynamicCast<       Z>(e.get()); p ? s += p->x : dummy++; } return s; });
-        print_average(sum);
-        printf("```\n\n");
-
-        printf("Implementation: `priori_cast`\n");
-        printf("```\n");
-        sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<       A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<cross::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = priori_cast<       Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<       A>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::B>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::C>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::D>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::E>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::F>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::G>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<cross::H>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = vrc::dynamicCast<       Z>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
         printf("Implementation: `kcl_dynamic_cast`\n");
         printf("```\n");
         sum = 0;
-        dummy += run("A", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<       A*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("B", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::B*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("C", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::C*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("D", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::D*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("E", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::E*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("F", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::F*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("G", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::G*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("H", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<cross::H*>(e.get()); p ? s += p->x : dummy++; } return s; });
-        sum   += run("Z", [&v]() -> uint64_t { auto s = 0; for (auto& e: v) { auto *p = kcl_dynamic_cast<       Z*>(e.get()); p ? s += p->x : dummy++; } return s; });
+        dummy += run("A", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<       A*>(e.get()); s += p ? p->a : e->z; } return s; });
+        sum   += run("B", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::B*>(e.get()); s += p ? p->b : e->z; } return s; });
+        sum   += run("C", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::C*>(e.get()); s += p ? p->c : e->z; } return s; });
+        sum   += run("D", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::D*>(e.get()); s += p ? p->d : e->z; } return s; });
+        sum   += run("E", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::E*>(e.get()); s += p ? p->e : e->z; } return s; });
+        sum   += run("F", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::F*>(e.get()); s += p ? p->f : e->z; } return s; });
+        sum   += run("G", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::G*>(e.get()); s += p ? p->g : e->z; } return s; });
+        sum   += run("H", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<cross::H*>(e.get()); s += p ? p->h : e->z; } return s; });
+        sum   += run("Z", [&v]() { uint64_t s = 0; for (auto&& e: v) { auto *p = kcl_dynamic_cast<       Z*>(e.get()); s += p ? p->z : e->z; } return s; });
         print_average(sum);
         printf("```\n\n");
 
     }
 }
 
-struct JustKclRtti : KCL::RTTI::Base {
-    KCL_RTTI_IMPL();
-};
-KCL_RTTI_REGISTER(JustKclRtti);
-
-std::vector<std::shared_ptr<A>> vec_deep_successful;
-std::vector<std::shared_ptr<A>> vec_deep_fails;
-
-std::vector<std::shared_ptr<A>> vec_shallow_successful;
-std::vector<std::shared_ptr<A>> vec_shallow_fails;
-
-std::vector<std::shared_ptr<A>> vec_deep_mixed;
-std::vector<std::shared_ptr<A>> vec_shallow_mixed;
-std::vector<std::shared_ptr<A>> vec_balanced_mixed;
-
-std::vector<std::shared_ptr<A>> vec_cross_all;
-std::vector<std::shared_ptr<A>> vec_cross_most;
-std::vector<std::shared_ptr<A>> vec_cross_mixed;
-
 int main()
 {
-    generate_data(vec_deep_successful, Hierarchy::deep, 6, 0);
-    generate_data(vec_deep_fails, Hierarchy::deep, 1, 0);
-    generate_data(vec_deep_mixed, Hierarchy::deep, 0, 6);
+    auto vec_deep_successful = generate_data(Hierarchy::deep, 6, 0);
+    auto vec_deep_fails = generate_data(Hierarchy::deep, 1, 0);
+    auto vec_deep_mixed = generate_data(Hierarchy::deep, 0, 7);
 
-    generate_data(vec_shallow_successful, Hierarchy::shallow, 6, 0);
-    generate_data(vec_shallow_fails, Hierarchy::shallow, 1, 0);
-    generate_data(vec_shallow_mixed, Hierarchy::shallow, 0, 6);
+    auto vec_shallow_successful = generate_data(Hierarchy::shallow, 6, 0);
+    auto vec_shallow_fails = generate_data(Hierarchy::shallow, 1, 0);
+    auto vec_shallow_mixed = generate_data(Hierarchy::shallow, 0, 7);
 
-    generate_data(vec_balanced_mixed, Hierarchy::balanced, 0, 6);
+    auto vec_balanced_mixed = generate_data(Hierarchy::balanced, 0, 7);
 
-    generate_data(vec_cross_all, Hierarchy::cross, 7, 0);
-    generate_data(vec_cross_most, Hierarchy::cross, 6, 0);
-    generate_data(vec_cross_mixed, Hierarchy::cross, 6, 1);
+    auto vec_cross_all = generate_data(Hierarchy::cross, 7, 0);
+    auto vec_cross_most = generate_data(Hierarchy::cross, 6, 0);
+    auto vec_cross_mixed = generate_data(Hierarchy::cross, 5, 2);
 
     // Run the benchmark loop 3 times:
     // 1st: Warming up, discard.
     // 2nd: Objects are ordered in memory
     // 3rd: Objects are shuffled in memory
-    for (unsigned int i = 0; i < 3; i++) {
+    for (unsigned i = 0; i < 3; i++) {
         max_num_ops = 0;
 
         printf("\n\n\n\n\n");
@@ -593,16 +520,17 @@ int main()
                 shuffle(vec_cross_all);
                 shuffle(vec_cross_most);
                 shuffle(vec_cross_mixed);
+                break;
         }
 
         printf("### Class hierarchy: cross\n\n");
 
         printf("```\n");
-        printf("B -+  [A]-+   F -+\n");
-        printf("   |      |      |\n");
-        printf("   +-> D -+-> G -+-> H\n");
-        printf("   |      |\n");
-        printf("C -+   E -+\n");
+        printf("[A]-+   C -+   E -+\n");
+        printf("    |      |      |\n");
+        printf("    +-> F -+-> G -+-> H\n");
+        printf("    |      |\n");
+        printf(" B -+   D -+\n");
         printf("\nZ - unrelated\n");
         printf("```\n");
 
@@ -612,10 +540,9 @@ int main()
         printf("#### Cast type: Mostly successful (cast from class G)\n\n");
         run_benchmarks(vec_cross_most, Hierarchy::cross);
 
-        printf("#### Cast type: Mixed (cast from random classes G or H)\n\n");
+        printf("#### Cast type: Mixed (cast from random classes F, G, or H)\n\n");
         run_benchmarks(vec_cross_mixed, Hierarchy::cross);
 
-#if 1
         printf("### Class hierarchy: deep\n\n");
 
         printf("```\n");
@@ -681,11 +608,12 @@ int main()
 
         printf("#### Cast type: Mixed (cast from random classes)\n\n");
         run_benchmarks(vec_balanced_mixed, Hierarchy::balanced);
-#endif
     }
 
     printf("\n\n\n\n\n");
-    std::cout << "sizeof JustKclRtti: " << sizeof(JustKclRtti) << "\n";
-    std::cout << "sizeof A: " << sizeof(A) << "\n";
+    printf("sizeof JustKclRtti: %llu\n\n", static_cast<unsigned long long>(sizeof(JustKclRtti)));
+    printf("sizeof JustVrcRtti: %llu\n\n", static_cast<unsigned long long>(sizeof(JustVrcRtti)));
+    printf("sizeof JustRtti: %llu\n\n", static_cast<unsigned long long>(sizeof(JustRtti)));
+    printf("sizeof A: %llu\n\n", static_cast<unsigned long long>(sizeof(A)));
     printf("%f", dummy);
 }

@@ -5,13 +5,24 @@
 #include <memory>
 #include <utility>
 
+#if !defined(FORCE_INLINE)
+#    if defined(_MSC_VER)
+#        define FORCE_INLINE __forceinline
+#    elif defined(__GNUC__)
+#        define FORCE_INLINE __attribute__((always_inline)) inline
+#    else
+#        define FORCE_INLINE inline
+#    endif
+#endif  // !defined(FORCE_INLINE)
+
 #define VRC_IMPLEMENT_DYNAMIC_CAST(...) \
-    const void* dynamicCast(util::type_id id) const override { \
+    FORCE_INLINE const void* dynamicCast(util::type_id id) const override { \
         using Ty = std::remove_const_t<std::remove_pointer_t<decltype(this)>>; \
-        if (id == util::type_traits<Ty>::id()) { return this; } \
-        return vrc::detail::dynamicCastImpl<Ty, ##__VA_ARGS__>{}(this, id); \
+        return vrc::detail::dynamicCastImpl<Ty, vrc::AsIface<Ty>, ##__VA_ARGS__>{}(this, id); \
     } \
-    void* dynamicCast(util::type_id id) { return const_cast<void*>(std::as_const(*this).dynamicCast(id)); } \
+    FORCE_INLINE void* dynamicCast(util::type_id id) { \
+        return const_cast<void*>(std::as_const(*this).dynamicCast(id)); \
+    } \
     static_assert(true)
 
 namespace vrc {
@@ -19,7 +30,7 @@ namespace vrc {
 struct RttiBase {
     virtual ~RttiBase() = default;
     virtual const void* dynamicCast(util::type_id id) const = 0;
-    void* dynamicCast(util::type_id id) { return const_cast<void*>(std::as_const(*this).dynamicCast(id)); }
+    FORCE_INLINE void* dynamicCast(util::type_id id) { return const_cast<void*>(std::as_const(*this).dynamicCast(id)); }
 };
 
 template<typename Ty>
@@ -76,7 +87,7 @@ template<typename, typename...>
 struct dynamicCastImpl {};
 template<typename Ty>
 struct dynamicCastImpl<Ty> {
-    const void* operator()(const Ty*, util::type_id) const { return nullptr; }
+    constexpr const void* operator()(const Ty*, util::type_id) const { return nullptr; }
 };
 template<typename Ty, typename Ty2, typename... Tail>
 struct dynamicCastImpl<Ty, AsIface<Ty2>, Tail...> {
